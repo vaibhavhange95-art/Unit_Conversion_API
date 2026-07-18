@@ -16,7 +16,8 @@ namespace Unit_Conversion_API.Services.Implementation
 
             if (category == null)
             {
-                throw new Exception("Conversion category not found.");
+                throw new ConversionException(
+       $"Conversion category '{request.Category}' is not supported.");
             }
 
 
@@ -34,7 +35,7 @@ namespace Unit_Conversion_API.Services.Implementation
 
             if (fromUnit == null || toUnit == null)
             {
-                throw new Exception("Unit not found.");
+                throw new ConversionException("Source or target unit is not supported.");
             }
 
 
@@ -123,7 +124,8 @@ namespace Unit_Conversion_API.Services.Implementation
             }
 
 
-            throw new Exception("Temperature conversion not supported.");
+            throw new ConversionException(
+                "Temperature conversion is not supported between these units.");
         }
     }
 }

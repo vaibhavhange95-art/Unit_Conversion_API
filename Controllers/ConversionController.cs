@@ -18,8 +18,14 @@ namespace Unit_Conversion_API.Controllers
 
         [HttpPost]
         public IActionResult Convert(
-            [FromBody] ConversionRequestDto request)
+     [FromBody] ConversionRequestDto request)
         {
+            if (request.Value == 0)
+            {
+                return BadRequest(
+                    "Value cannot be zero.");
+            }
+
             var result = _conversionService.Convert(request);
 
             return Ok(result);

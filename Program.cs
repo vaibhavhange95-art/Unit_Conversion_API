@@ -1,5 +1,6 @@
 using Unit_Conversion_API.Services.Implementation;
 using Unit_Conversion_API.Services.Interfaces;
+using Unit_Conversion_API.Middleware;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 // Configure HTTP pipeline
 if (app.Environment.IsDevelopment())
 {
