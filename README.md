@@ -142,23 +142,7 @@ Responsibilities:
 - Fahrenheit
 - Kelvin
 
----
-
-## Time
-
-(Time units can be added dynamically.)
-
-Example:
-
-- Second
-- Minute
-- Hour
-- Day
-- Week
-- Month
-- Year
-
----
+--- and can be added many more
   
 ---
 
@@ -268,6 +252,29 @@ If the unit already exists:
 }
 ```
 - (Additional categories can be added as needed.)
+
+
+### 4. Update Unit Base Factor
+**PUT** `/api/UpdateUnitBaseFactor`
+
+Updates the `ToBaseFactor` of an existing unit.
+
+**Request Body**
+```json
+{
+  "category": "Len",
+  "name": "Kilometer",
+  "toBaseFactor": 1200
+}
+```
+
+---
+
+## Response
+
+- **200 OK** –Unit updated successfully.
+- **404 Not Found** – Unit or category not found.
+- **400 Bad Request** – Invalid request.
 
 
 

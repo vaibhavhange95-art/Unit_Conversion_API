@@ -183,36 +183,60 @@ new List<UnitDefinition>
     };
         }
 
-        public IEnumerable<string> SearchCategories(
-    string searchText)
+        public IEnumerable<string> SearchCategories(string searchText)
         {
-            if (string.IsNullOrWhiteSpace(searchText))
+            try
             {
-                return _units.Keys;
+                if (string.IsNullOrWhiteSpace(searchText))
+                {
+                    return _units.Keys;
+                }
+               
+                return _units.Keys
+                    .Where(category =>
+                        category.Contains(
+                            searchText,
+                            StringComparison.OrdinalIgnoreCase))
+                    .ToList();
             }
-
-            return _units.Keys
-                .Where(category =>
-                    category.Contains(
-                        searchText,
-                        StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            catch (Exception)
+            {
+                return null;
+            }
         }
         public IEnumerable<UnitDefinition> GetUnits(
             string category)
         {
-            var matchedCategory = _units.Keys
-         .FirstOrDefault(x =>
-             x.Contains(category, StringComparison.OrdinalIgnoreCase));
+            try
+            { 
+                var matchedCategory = _units.Keys
+             .FirstOrDefault(x =>
+                 x.Contains(category, StringComparison.OrdinalIgnoreCase));
 
-            if (matchedCategory != null)
-            {
-                return _units[matchedCategory];
+                if (matchedCategory != null)
+                {
+                    return _units[matchedCategory];
+                }
+
+                return Enumerable.Empty<UnitDefinition>();
             }
-
-            return Enumerable.Empty<UnitDefinition>();
+            catch (Exception ex)
+            {
+                return Enumerable.Empty<UnitDefinition>();
+            }
         }
 
+        public IEnumerable<string> GetUnitCategories(string category)
+        {
+            if (string.Equals(category, "All", StringComparison.OrdinalIgnoreCase))
+            {
+                return _units.Keys.ToList();
+            }
+
+            return _units.Keys
+                .Where(x => x.Contains(category, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
 
         public UnitDefinition? GetUnit(
             string category,
@@ -227,33 +251,74 @@ new List<UnitDefinition>
         }
 
 
+        public bool UpdateUnitBaseFactor(
+    string category,
+    string unitName,
+    double toBaseFactor)
+        {
+            try
+            {
+                if (!_units.ContainsKey(category))
+                {
+                    return false;
+                }
+
+                var existingUnit = _units[category]
+                    .FirstOrDefault(x =>
+                        x.Name.Equals(
+                            unitName,
+                            StringComparison.OrdinalIgnoreCase));
+
+                if (existingUnit == null)
+                {
+                    return false;
+                }
+
+                existingUnit.ToBaseFactor = toBaseFactor;
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+
         public bool AddUnit(
       string category,
       UnitDefinition unit)
         {
-            if (!_units.ContainsKey(category))
+            try
             {
-                _units[category] =
-                    new List<UnitDefinition>();
+                if (!_units.ContainsKey(category))
+                {
+                    _units[category] =
+                        new List<UnitDefinition>();
+                }
+
+
+                var existingUnit = _units[category]
+                    .FirstOrDefault(x =>
+                        x.Name.Equals(
+                            unit.Name,
+                            StringComparison.OrdinalIgnoreCase));
+
+
+                if (existingUnit != null)
+                {
+                    return false;
+                }
+
+
+                _units[category].Add(unit);
+
+                return true;
             }
-
-
-            var existingUnit = _units[category]
-                .FirstOrDefault(x =>
-                    x.Name.Equals(
-                        unit.Name,
-                        StringComparison.OrdinalIgnoreCase));
-
-
-            if (existingUnit != null)
+            catch (Exception ex)
             {
                 return false;
             }
-
-
-            _units[category].Add(unit);
-
-            return true;
         }
     }
 }

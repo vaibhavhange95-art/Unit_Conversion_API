@@ -18,54 +18,103 @@ namespace Unit_Conversion_API.Controllers
             _unitRepository = unitRepository;
         }
 
-        
-    //    public IActionResult SearchCategories(
-    //string text)
-    //    {
-    //        var result = _unitRepository
-    //            .SearchCategories(text);
-
-    //        return Ok(result);
-    //    }
-
         [HttpGet("SearchUnits")]
         public IActionResult GetUnits(string category)
         {
-            var units = _unitRepository.GetUnits(category);
+            try
+            {
 
-            return Ok(units);
+                var units = _unitRepository.GetUnits(category);
+                var units2 = _unitRepository.GetUnitCategories(category);
+
+                return Ok(units);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    $"An error occurred: {ex.Message}");
+            }
         }
 
-        [HttpPost("/api/AddUnit")]
-        public IActionResult AddUnit(
-     AddUnitRequestDto request)
+
+        [HttpGet("Availabe Unit Categories")]
+        public IActionResult GetUnitCategories(string category)
         {
-            var unit = new UnitDefinition
+            try
             {
-                Name = request.Name,
-                ToBaseFactor = request.ToBaseFactor
-            };
-
-
-            var added = _unitRepository.AddUnit(
-                request.Category,
-                unit);
-
-
-            if (!added)
+                var unitCategories = _unitRepository.GetUnitCategories(category);
+                return Ok(unitCategories);
+            }
+            catch (Exception ex)
             {
-                return BadRequest(new
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    $"An error occurred: {ex.Message}");
+            }
+        }
+
+
+        [HttpPut("UpdateUnitBaseFactor")]
+        public IActionResult UpdateUnitBaseFactor([FromBody] UpdateUnitRequest request)
+        {
+            try
+            {
+                var result = _unitRepository.UpdateUnitBaseFactor(
+                    request.Category,
+                    request.Name,
+                    request.ToBaseFactor);
+
+                if (!result)
                 {
-                    message = $"Unit '{request.Name}' already exists in category '{request.Category}'."
+                    return NotFound("Unit or category not foun");
+                }
+
+                return Ok("Unit updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    $"An error occurred: {ex.Message}");
+            }
+        }
+
+
+        [HttpPost("/api/AddUnit")]
+        public IActionResult AddUnit(AddUnitRequestDto request)
+        {
+            try
+            {
+                var unit = new UnitDefinition
+                {
+                    Name = request.Name,
+                    ToBaseFactor = request.ToBaseFactor
+                };
+
+
+                var added = _unitRepository.AddUnit(
+                    request.Category,
+                    unit);
+
+
+                if (!added)
+                {
+                    return BadRequest(new
+                    {
+                        message = $"Unit '{request.Name}' already exists in category '{request.Category}'."
+                    });
+                }
+
+
+                return Ok(new
+                {
+                    message = "Unit added successfully",
+                    unit = request.Name
                 });
             }
-
-
-            return Ok(new
+            catch (Exception ex)
             {
-                message = "Unit added successfully",
-                unit = request.Name
-            });
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    $"An error occurred: {ex.Message}");
+            }
         }
     }
 }
