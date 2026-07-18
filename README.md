@@ -2,325 +2,368 @@
 
 ## Overview
 
-Unit Conversion API is an ASP.NET Core Web API application that allows users to convert numerical values between different units of measurement.
+Unit Conversion API is a RESTful Web API built using ASP.NET Core that converts numerical values between different units of measurement.
 
-The API supports multiple conversion categories including:
+The API currently supports:
 
 - Length
 - Weight / Mass
 - Temperature
+- Time (Dynamic Category)
 
-The application is designed with a clean and maintainable architecture. Conversion data is currently maintained in code using an in-memory configuration approach. No database is required for the current implementation.
-
----
-
-# Technology Stack
-
-- ASP.NET Core Web API
-- .NET 10
-- C#
-- Swagger / OpenAPI
-- Dependency Injection
-- RESTful API Architecture
+The application is designed using a layered architecture and stores all unit definitions in memory. New categories and units can be added dynamically at runtime without changing the application code or using a database.
 
 ---
 
 # Features
 
-## Supported Conversions
+- Convert values between supported units
+- Dynamic in-memory unit repository
+- Add new conversion categories
+- Add new units to existing or new categories
+- Global exception handling
+- Swagger/OpenAPI support
+- Repository Pattern
+- Service Layer Architecture
+- Clean folder structure
+- No database dependency
 
-### Length
+---
 
-Supported units:
+# Technologies Used
+
+- ASP.NET Core (.NET 10 SDK)
+- C#
+- Swagger / OpenAPI
+- Visual Studio 2026
+- Git & GitHub
+
+---
+
+# Project Structure
+
+```
+Unit_Conversion_API
+│
+├── Controllers
+│   ├── ConvertController.cs
+│   └── UnitController.cs
+│
+├── DTOs
+│
+├── Exceptions
+│
+├── Middleware
+│
+├── Models
+│
+├── Repositories
+│   ├── Interfaces
+│   └── Implementation
+│
+├── Services
+│   ├── Interfaces
+│   └── Implementation
+│
+├── Program.cs
+│
+└── README.md
+```
+
+---
+
+# Design Overview
+
+The project follows a layered architecture.
+
+```
+Controller
+     │
+     ▼
+Service Layer
+     │
+     ▼
+Repository Layer
+     │
+     ▼
+In-Memory Unit Store
+```
+
+Responsibilities:
+
+- Controller
+    - Handles HTTP Requests
+    - Returns HTTP Responses
+
+- Service
+    - Contains business logic
+    - Performs unit conversion
+
+- Repository
+    - Stores categories and units
+    - Supports dynamic addition of new units
+
+---
+
+# Supported Categories
+
+## Length
 
 - Meter
 - Kilometer
+- Centimeter
+- Millimeter
+- Micrometer
+- Nanometer
+- Inch
 - Foot
+- Yard
 - Mile
 
-Examples:
-Meter → Foot
-Kilometer → Mile
 ---
 
-### Weight / Mass
-
-Supported units:
+## Weight
 
 - Kilogram
 - Gram
+- Milligram
+- MetricTon
 - Pound
-
-Examples:
-Kilogram → Pound
-Gram → Kilogram
-
-
+- Ounce
+- Stone
+- Carat
+- Microgram
 
 ---
 
-### Temperature
-
-Supported units:
+## Temperature
 
 - Celsius
 - Fahrenheit
 - Kelvin
 
-Examples:
-
-
-Celsius → Fahrenheit
-Fahrenheit → Celsius
-Celsius → Kelvin
-
-
-
 ---
 
-# Solution Architecture
+## Time
 
-The project follows a layered architecture approach:
+(Time units can be added dynamically.)
 
-Unit_Conversion_API
+Example:
 
-│
-├── Controllers
-│ API endpoints and HTTP request handling
-│
-├── DTOs
-│ Request and response models
-│
-├── Models
-│ Domain models
-│
-├── Services
-│ Business logic implementation
-│
-│ ├── Interfaces
-│ │ Service contracts
-│ │
-│ └── Implementation
-│ Conversion logic
-│
-├── Constants
-│ In-memory conversion configuration
-│
-├── Exceptions
-│ Custom business exceptions
-│
-├── Middleware
-│ Global exception handling
-│
-└── Program.cs
-
-
-## Service Layer
-
-Business logic is separated from controllers using interfaces and dependency injection.
-
-Flow:
-API Controller
-|
-|
-IConversionService
-|
-|
-ConversionService
-|
-|
-Conversion Configuration
-
-
-# API Documentation
-
-Swagger UI is enabled for testing and exploring the API.
-
-After running the application, open:
-https://localhost:<port>/swagger
+- Second
+- Minute
+- Hour
+- Day
+- Week
+- Month
+- Year
 
 ---
-
-# API Endpoint
-
-## Convert Units
-
-### Request
-
-
-POST /api/conversion
-
-
+  
 ---
 
-## Example Request
+# Dynamic Unit Management
+
+The application stores all units inside an in-memory repository.
+
+New categories and units can be added at runtime using the Add Unit API.
+
+## API Endpoints
+
+### 1. Convert Units
+**POST** `/api/Convert`
+
+Converts a value from one unit to another within the same category.
+ 
+Sample Request
 
 ```json
 {
   "category": "Length",
   "fromUnit": "Meter",
-  "toUnit": "Foot",
-  "value": 10
+  "toUnit": "Kilometer",
+  "value": 5000
 }
+```
 
-Example Response
+Sample Response
+
+```json
 {
-  "originalValue": 10,
+  "originalValue": 5000,
   "fromUnit": "Meter",
-  "toUnit": "Foot",
-  "convertedValue": 32.80839895013123,
+  "toUnit": "Kilometer",
+  "convertedValue": 5,
   "category": "Length"
 }
+```
+---
+
+### 2. Search Units
+**GET** `/api/Unit/SearchUnits?category={category}`
+
+Returns all available units for the specified category.
+
+**Example**
+```
+GET /api/Unit/SearchUnits?category=Len
+
+## Example Categories
+
+- `Len` – Length
+- `Temp` – Temprature
+```
 
 
-Error Handling
+Example Response
 
-The API includes global exception handling middleware.
+```json
+[
+  {
+    "category": "Length",
+    "units": [
+      {
+        "name": "Meter",
+        "toBaseFactor": 1
+      },
+      {
+        "name": "Kilometer",
+        "toBaseFactor": 1000
+      }
+    ]
+  }
+]
+```
+---
 
-Example invalid request:
+### 3. Add New Unit
+**POST** `/api/AddUnit`
 
+Adds a new unit to an existing category.
+
+Sample Request
+
+```json
 {
-  "category": "Length",
-  "fromUnit": "Meter",
-  "toUnit": "Unknown",
-  "value": 10
+  "category": "Time",
+  "name": "Hour",
+  "toBaseFactor": 3600
 }
+```
 
-Response:
+Sample Response
 
+```json
 {
-  "statusCode": 400,
-  "message": "Source or target unit is not supported."
+  "message": "Unit added successfully",
+  "unit": "Hour"
 }
+```
 
-The API does not expose internal stack traces to consumers.
+If the unit already exists:
+
+```json
+{
+  "message": "Unit 'Hour' already exists in category 'Time'."
+}
+```
+- (Additional categories can be added as needed.)
 
 
 
+No application restart or database changes are required.
 
-How to Run Locally
-Prerequisites
+---
 
-Install:
+# Error Handling
 
-Visual Studio 2022/2026
-.NET 10 SDK
-Steps
-1. Clone Repository
+The API uses Global Exception Middleware.
+
+Example Response
+
+```json
+{
+    "statusCode": 400,
+    "message": "Source or target unit is not supported."
+}
+```
+
+---
+
+# How to Run
+
+## Prerequisites
+
+- .NET SDK 10
+- Visual Studio 2026 (or later)
+
+---
+
+## Steps
+
+Clone repository
+
+```
 git clone https://github.com/vaibhavhange95-art/Unit_Conversion_API/tree/Unit_Conversion_API
-2. Open Solution
+```
 
-Open:
+Navigate to project
 
-Unit_Conversion_API.sln
+```
+cd Unit_Conversion_API
+```
 
-in Visual Studio.
+Restore packages
 
-3. Restore Dependencies
-
-Visual Studio will automatically restore NuGet packages.
-
-Alternatively:
-
+```
 dotnet restore
+```
 
-4. Run Application
+Build
 
-Run using:
+```
+dotnet build
+```
 
-Visual Studio → F5
+Run
 
-or:
-
+```
 dotnet run
-5. Open Swagger
+```
 
-Navigate to:
+Open Swagger
 
+```
 https://localhost:<port>/swagger
+```
 
+---
 
-Testing Examples
-Length Conversion
+# Design Decisions
 
-Request:
+- Repository Pattern is used to separate data access from business logic.
+- In-memory storage is used instead of a database to keep the solution lightweight.
+- Conversion logic is isolated in the Service Layer.
+- Global Exception Middleware provides consistent error responses.
+- New categories and units can be added dynamically at runtime.
+- Duplicate units are prevented within the same category.
+- The architecture can be extended to support persistent storage with minimal changes.
 
-{
-  "category": "Length",
-  "fromUnit": "Meter",
-  "toUnit": "Foot",
-  "value": 5
-}
+---
 
-Expected result:
+# Future Enhancements
 
-16.404 feet approximately
+- Database integration (SQL Server / PostgreSQL)
+- Unit aliases (m, km, cm, ft, etc.)
+- Update/Delete Unit APIs
+- Authentication & Authorization
+- Unit history and audit logging
+- Caching
+- Unit validation rules
+- Support for hundreds or thousands of units using persistent storage
 
+---
 
+# Author
 
-Weight Conversion
-
-Request:
-
-{
-  "category": "Weight",
-  "fromUnit": "Kilogram",
-  "toUnit": "Pound",
-  "value": 10
-}
-
-Expected result:
-
-22.046 pounds approximately
-Temperature Conversion
-
-Request:
-{
-  "category": "Temperature",
-  "fromUnit": "Celsius",
-  "toUnit": "Fahrenheit",
-  "value": 25
-}
-Expected result:
-
-77 Fahrenheit
-
-
-Future Improvements
-
-Possible future enhancements:
-
-Database support for unit management
-Admin API to add/update units
-Authentication and authorization
-Unit validation rules
-Automated unit tests
-Logging and monitoring
-Containerization using Docker
-CI/CD pipeline integration
-
-
-Git Workflow
-
-The project follows standard Git practices:
-
-Example:
-
-git add .
-git commit -m "Meaningful commit message"
-git push
-
-Each major feature is committed separately to maintain clear project history.
-
-
-
-
-License
-
-This project is created as a technical demonstration project.
-
-
-
-
-
-
+Vaibhav Hange

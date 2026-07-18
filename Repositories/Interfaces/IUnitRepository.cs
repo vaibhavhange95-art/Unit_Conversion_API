@@ -6,12 +6,12 @@ namespace Unit_Conversion_API.Repositories.Interfaces
     {
         IEnumerable<UnitDefinition> GetUnits(string category);
 
-        UnitDefinition? GetUnit(
-            string category,
+        IEnumerable<string> SearchCategories(string searchText);
+        UnitDefinition? GetUnit(    string category,
             string unitName);
 
-        void AddUnit(
-            string category,
-            UnitDefinition unit);
+        bool AddUnit(
+     string category,
+     UnitDefinition unit);
     }
 }

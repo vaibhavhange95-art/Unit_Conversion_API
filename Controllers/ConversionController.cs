@@ -6,6 +6,7 @@ namespace Unit_Conversion_API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+
     public class ConversionController : ControllerBase
     {
         private readonly IConversionService _conversionService;
@@ -16,7 +17,7 @@ namespace Unit_Conversion_API.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("/api/Convert")]
         public IActionResult Convert(
      [FromBody] ConversionRequestDto request)
         {
