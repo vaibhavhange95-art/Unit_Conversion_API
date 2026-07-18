@@ -1,6 +1,7 @@
 ﻿using Unit_Conversion_API.Constants;
 using Unit_Conversion_API.DTOs;
 using Unit_Conversion_API.Services.Interfaces;
+using Unit_Conversion_API.Exceptions;
 
 namespace Unit_Conversion_API.Services.Implementation
 {
