@@ -31,5 +31,29 @@ namespace Unit_Conversion_API.Controllers
 
             return Ok(result);
         }
+
+        // Endpoint to add a formula if not found
+        [HttpPost("/api/AddFormula")]
+        public IActionResult AddFormula([FromBody] Models.ConversionFormula formula)
+        {
+            if (formula == null || string.IsNullOrWhiteSpace(formula.Formula))
+            {
+                return BadRequest("Invalid formula.");
+            }
+
+            var repo = HttpContext.RequestServices.GetService(typeof(Repositories.Interfaces.IUnitRepository)) as Repositories.Interfaces.IUnitRepository;
+            if (repo == null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Repository not available.");
+            }
+
+            var added = repo.AddFormula(formula);
+            if (!added)
+            {
+                return Conflict("Formula already exists.");
+            }
+
+            return Ok("Formula added successfully.");
+        }
     }
 }

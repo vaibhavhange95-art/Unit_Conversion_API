@@ -12,6 +12,7 @@ The API currently supports:
 - Time (Dynamic Category)
 
 The application is designed using a layered architecture and stores all unit definitions in memory. New categories and units can be added dynamically at runtime without changing the application code or using a database.
+The **Unit_Conversion_API** provides REST endpoints for converting units, searching available units, Adding categories, and updating conversion factors.
 
 ---
 
@@ -142,6 +143,15 @@ Responsibilities:
 - Fahrenheit
 - Kelvin
 
+---
+
+## Volume
+- Milliliter (mL)
+- Liter (L)
+- Cubic Meter (m³)
+- Gallon 
+- Quart
+
 --- and can be added many more
   
 ---
@@ -225,24 +235,49 @@ Example Response
 
 Adds a new unit to an existing category.
 
-Sample Request
+S## Add Unit API
 
-```json
-{
-  "category": "Time",
-  "name": "Hour",
-  "toBaseFactor": 3600
-}
+The `POST /api/AddUnit` endpoint is designed to add **one unit at a time**. ```
+
+### Current Behavior
+
+- ✅ Accepts a single unit per request.
+- ✅ Creates the category automatically if it does not exist.
+- ✅ Prevents duplicate unit names within the same category.
+- ❌ Does not currently support adding multiple units in a single request.
+
+### Future Enhancement
+
+A bulk insert endpoint (`POST /api/AddUnits`) is planned to support adding multiple units in a single request.
+
+**Example Request**
+
+```
+[
+  {
+    "category": "Time",
+    "name": "Millisecond",
+    "toBaseFactor": 0.001
+  },
+  {
+    "category": "Time",
+    "name": "Second",
+    "toBaseFactor": 1
+  },
+  {
+    "category": "Time",
+    "name": "Minute",
+    "toBaseFactor": 60
+  },
+  {
+    "category": "Time",
+    "name": "Hour",
+    "toBaseFactor": 3600
+  }
+]
 ```
 
-Sample Response
-
-```json
-{
-  "message": "Unit added successfully",
-  "unit": "Hour"
-}
-```
+This enhancement will improve performance by allowing multiple units to be added in a single API call while keeping the existing `POST /api/AddUnit` endpoint available for single-unit operations.
 
 If the unit already exists:
 
@@ -276,7 +311,31 @@ Updates the `ToBaseFactor` of an existing unit.
 - **404 Not Found** – Unit or category not found.
 - **400 Bad Request** – Invalid request.
 
+## 5. Get Available Unit Categories
 
+**Endpoint**
+
+```http
+GET /api/Unit/AvailableUnitCategories
+```
+
+**Description**
+
+Returns all supported unit categories available in the API.
+
+**Sample Response**
+
+```json
+[
+  "Length",
+  "Weight",
+  "Temperature",
+  "Area",
+  "Volume",
+  "Speed",
+  "Time"
+]
+```
 
 No application restart or database changes are required.
 

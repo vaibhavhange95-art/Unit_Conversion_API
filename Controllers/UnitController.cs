@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using Unit_Conversion_API.DTOs;
 using Unit_Conversion_API.Models;
+using System.Text.Json.Serialization;
 using Unit_Conversion_API.Repositories.Interfaces;
 
 namespace Unit_Conversion_API.Controllers
@@ -25,8 +27,7 @@ namespace Unit_Conversion_API.Controllers
             {
 
                 var units = _unitRepository.GetUnits(category);
-                var units2 = _unitRepository.GetUnitCategories(category);
-
+ 
                 return Ok(units);
             }
             catch (Exception ex)
@@ -38,11 +39,11 @@ namespace Unit_Conversion_API.Controllers
 
 
         [HttpGet("Availabe Unit Categories")]
-        public IActionResult GetUnitCategories(string category)
+        public IActionResult GetUnitCategories()
         {
             try
             {
-                var unitCategories = _unitRepository.GetUnitCategories(category);
+                var unitCategories = _unitRepository.GetUnitCategories();
                 return Ok(unitCategories);
             }
             catch (Exception ex)
@@ -79,36 +80,42 @@ namespace Unit_Conversion_API.Controllers
 
 
         [HttpPost("/api/AddUnit")]
-        public IActionResult AddUnit(AddUnitRequestDto request)
+        public IActionResult AddUnit([FromBody] List<AddUnitRequestDto> requests)
         {
             try
             {
-                var unit = new UnitDefinition
+                if (requests == null || !requests.Any())
                 {
-                    Name = request.Name,
-                    ToBaseFactor = request.ToBaseFactor
-                };
-
-
-                var added = _unitRepository.AddUnit(
-                    request.Category,
-                    unit);
-
-
-                if (!added)
-                {
-                    return BadRequest(new
-                    {
-                        message = $"Unit '{request.Name}' already exists in category '{request.Category}'."
-                    });
+                    return BadRequest("No units were provided.");
                 }
 
+                var addedUnits = new List<string>();
+                var skippedUnits = new List<string>();
 
+                foreach (var item in requests)
+                {
+                    var unit = new UnitDefinition
+                    {
+                        Name = item.Name,
+                        ToBaseFactor = item.ToBaseFactor
+                    };
+
+                    var added = _unitRepository.AddUnit(item.Category, unit);
+
+                    if (added)
+                    {
+                        addedUnits.Add($"Unit '{item.Name}' added successfully.");
+                    }
+                    else
+                    {
+                        skippedUnits.Add($"Unit '{item.Name}' is already available.");
+                    }
+                }
                 return Ok(new
                 {
-                    message = "Unit added successfully",
-                    unit = request.Name
-                });
+                    Added = addedUnits,
+                    Skipped = skippedUnits
+                }); 
             }
             catch (Exception ex)
             {

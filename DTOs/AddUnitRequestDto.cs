@@ -1,11 +1,16 @@
-﻿namespace Unit_Conversion_API.DTOs
+﻿using System.Text.Json.Serialization;
+
+namespace Unit_Conversion_API.DTOs
 {
     public class AddUnitRequestDto
     {
-        public string Category { get; set; } = string.Empty;
+        [JsonPropertyName("category")]
+        public string Category { get; set; }
 
-        public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
 
+        [JsonPropertyName("toBaseFactor")]
         public double ToBaseFactor { get; set; }
     }
 }

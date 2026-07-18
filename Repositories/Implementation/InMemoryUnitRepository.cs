@@ -6,6 +6,8 @@ namespace Unit_Conversion_API.Repositories.Implementation
     public class InMemoryUnitRepository : IUnitRepository
     {
         private readonly Dictionary<string, List<UnitDefinition>> _units;
+        // Key is "Category|From|To" (case-insensitive)
+        private readonly Dictionary<string, Models.ConversionFormula> _formulas;
 
 
         public InMemoryUnitRepository()
@@ -181,6 +183,14 @@ new List<UnitDefinition>
             }
         }
     };
+            _formulas = new Dictionary<string, Models.ConversionFormula>(StringComparer.OrdinalIgnoreCase);
+            // Seed temperature formulas
+            AddFormula(new Models.ConversionFormula{ Category = "Temperature", FromUnit = "Celsius", ToUnit = "Fahrenheit", Formula = "(x * 9 / 5) + 32" });
+            AddFormula(new Models.ConversionFormula{ Category = "Temperature", FromUnit = "Fahrenheit", ToUnit = "Celsius", Formula = "(x - 32) * 5 / 9" });
+            AddFormula(new Models.ConversionFormula{ Category = "Temperature", FromUnit = "Celsius", ToUnit = "Kelvin", Formula = "x + 273.15" });
+            AddFormula(new Models.ConversionFormula{ Category = "Temperature", FromUnit = "Kelvin", ToUnit = "Celsius", Formula = "x - 273.15" });
+            AddFormula(new Models.ConversionFormula{ Category = "Temperature", FromUnit = "Fahrenheit", ToUnit = "Kelvin", Formula = "((x - 32) * 5 / 9) + 273.15" });
+            AddFormula(new Models.ConversionFormula{ Category = "Temperature", FromUnit = "Kelvin", ToUnit = "Fahrenheit", Formula = "((x - 273.15) * 9 / 5) + 32" });
         }
 
         public IEnumerable<string> SearchCategories(string searchText)
@@ -191,7 +201,7 @@ new List<UnitDefinition>
                 {
                     return _units.Keys;
                 }
-               
+
                 return _units.Keys
                     .Where(category =>
                         category.Contains(
@@ -201,7 +211,7 @@ new List<UnitDefinition>
             }
             catch (Exception)
             {
-                return null;
+                return Enumerable.Empty<string>();
             }
         }
         public IEnumerable<UnitDefinition> GetUnits(
@@ -220,22 +230,41 @@ new List<UnitDefinition>
 
                 return Enumerable.Empty<UnitDefinition>();
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 return Enumerable.Empty<UnitDefinition>();
             }
         }
 
-        public IEnumerable<string> GetUnitCategories(string category)
+        private string BuildFormulaKey(string category, string from, string to)
         {
-            if (string.Equals(category, "All", StringComparison.OrdinalIgnoreCase))
-            {
-                return _units.Keys.ToList();
-            }
+            return $"{category}|{from}|{to}";
+        }
 
-            return _units.Keys
-                .Where(x => x.Contains(category, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+        public bool TryGetFormula(string category, string fromUnit, string toUnit, out Models.ConversionFormula? formula)
+        {
+            var key = BuildFormulaKey(category, fromUnit, toUnit);
+            return _formulas.TryGetValue(key, out formula);
+        }
+
+        public bool AddFormula(Models.ConversionFormula formula)
+        {
+            try
+            {
+                var key = BuildFormulaKey(formula.Category, formula.FromUnit, formula.ToUnit);
+                if (_formulas.ContainsKey(key)) return false;
+                _formulas[key] = formula;
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public IEnumerable<string> GetUnitCategories()
+        {
+            return _units.Keys.ToList();
         }
 
         public UnitDefinition? GetUnit(
@@ -244,12 +273,17 @@ new List<UnitDefinition>
         {
             var units = GetUnits(category);
 
-            return units.FirstOrDefault(x =>
-                x.Name.Equals(
-                    unitName,
-                    StringComparison.OrdinalIgnoreCase));
-        }
+     //       return units.FirstOrDefault(x =>
+     //x.Name.StartsWith(
+     //    unitName,
+     //    StringComparison.OrdinalIgnoreCase));
+     //   }
 
+        return units
+    .Where(x => x.Name.StartsWith(unitName, StringComparison.OrdinalIgnoreCase))
+    .OrderByDescending(x => x.Name.Length)
+    .FirstOrDefault();
+            }
 
         public bool UpdateUnitBaseFactor(
     string category,
@@ -278,7 +312,7 @@ new List<UnitDefinition>
 
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception  )
             {
                 return false;
             }
@@ -315,7 +349,7 @@ new List<UnitDefinition>
 
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }

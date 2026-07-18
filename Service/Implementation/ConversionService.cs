@@ -49,27 +49,20 @@ namespace Unit_Conversion_API.Services.Implementation
                 throw new ConversionException(
                     $"Unit conversion is not supported from '{request.FromUnit}' to '{request.ToUnit}'.");
             }
-
-
+            request.FromUnit = fromUnit.Name;
+            request.ToUnit = toUnit.Name;
 
             double convertedValue;
 
 
-            // Temperature requires formula based conversion
-            if (request.Category.Equals(
-                "Temperature",
-                StringComparison.OrdinalIgnoreCase))
+            // Try to get a stored formula first
+            if (_unitRepository.TryGetFormula(request.Category, fromUnit.Name, toUnit.Name, out var formula))
             {
-                convertedValue = ConvertTemperature(
-                    request.Value,
-                    fromUnit.Name,
-                    toUnit.Name);
+                convertedValue = EvaluateFormula(formula.Formula, request.Value);
             }
             else
             {
-                // Convert:
-                // Source -> Base Unit -> Target
-
+                // Fallback to base-factor conversion
                 convertedValue =
                     request.Value *
                     fromUnit.ToBaseFactor /
@@ -86,6 +79,23 @@ namespace Unit_Conversion_API.Services.Implementation
                 ConvertedValue = convertedValue,
                 Category = request.Category
             };
+        }
+
+        private double EvaluateFormula(string formula, double x)
+        {
+            // Very small expression evaluator: replace 'x' and use DataTable.Compute as a simple option
+            // Note: DataTable is available and sufficient for basic arithmetic here.
+            try
+            {
+                var expr = formula.Replace("x", x.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                System.Data.DataTable table = new System.Data.DataTable();
+                var result = table.Compute(expr, string.Empty);
+                return System.Convert.ToDouble(result);
+            }
+            catch (Exception ex)
+            {
+                throw new ConversionException($"Failed to evaluate formula '{formula}': {ex.Message}");
+            }
         }
 
 
