@@ -6,8 +6,6 @@ namespace Unit_Conversion_API.Repositories.Implementation
     public class InMemoryUnitRepository : IUnitRepository
     {
         private readonly Dictionary<string, List<UnitDefinition>> _units;
-        // Key is "Category|From|To" (case-insensitive)
-        private readonly Dictionary<string, Models.ConversionFormula> _formulas;
 
 
         public InMemoryUnitRepository()
@@ -183,14 +181,6 @@ new List<UnitDefinition>
             }
         }
     };
-            _formulas = new Dictionary<string, Models.ConversionFormula>(StringComparer.OrdinalIgnoreCase);
-            // Seed temperature formulas
-            AddFormula(new Models.ConversionFormula{ Category = "Temperature", FromUnit = "Celsius", ToUnit = "Fahrenheit", Formula = "(x * 9 / 5) + 32" });
-            AddFormula(new Models.ConversionFormula{ Category = "Temperature", FromUnit = "Fahrenheit", ToUnit = "Celsius", Formula = "(x - 32) * 5 / 9" });
-            AddFormula(new Models.ConversionFormula{ Category = "Temperature", FromUnit = "Celsius", ToUnit = "Kelvin", Formula = "x + 273.15" });
-            AddFormula(new Models.ConversionFormula{ Category = "Temperature", FromUnit = "Kelvin", ToUnit = "Celsius", Formula = "x - 273.15" });
-            AddFormula(new Models.ConversionFormula{ Category = "Temperature", FromUnit = "Fahrenheit", ToUnit = "Kelvin", Formula = "((x - 32) * 5 / 9) + 273.15" });
-            AddFormula(new Models.ConversionFormula{ Category = "Temperature", FromUnit = "Kelvin", ToUnit = "Fahrenheit", Formula = "((x - 273.15) * 9 / 5) + 32" });
         }
 
         public IEnumerable<string> SearchCategories(string searchText)
@@ -236,31 +226,7 @@ new List<UnitDefinition>
             }
         }
 
-        private string BuildFormulaKey(string category, string from, string to)
-        {
-            return $"{category}|{from}|{to}";
-        }
-
-        public bool TryGetFormula(string category, string fromUnit, string toUnit, out Models.ConversionFormula? formula)
-        {
-            var key = BuildFormulaKey(category, fromUnit, toUnit);
-            return _formulas.TryGetValue(key, out formula);
-        }
-
-        public bool AddFormula(Models.ConversionFormula formula)
-        {
-            try
-            {
-                var key = BuildFormulaKey(formula.Category, formula.FromUnit, formula.ToUnit);
-                if (_formulas.ContainsKey(key)) return false;
-                _formulas[key] = formula;
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        // Formula management moved to FormulaCategoryRegistry; repository no longer stores formulas
 
         public IEnumerable<string> GetUnitCategories()
         {

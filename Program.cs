@@ -12,6 +12,10 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<IConversionService, ConversionService>();
 builder.Services.AddSingleton<IUnitRepository, InMemoryUnitRepository>();
+// Register FormulaCategoryRegistry as singleton so it's centrally available
+// Register FormulaCategoryRegistry as singleton so it's centrally available
+builder.Services.AddSingleton(provider => new FormulaCategoryRegistry(
+    provider.GetService(typeof(IUnitRepository)) as IUnitRepository));
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

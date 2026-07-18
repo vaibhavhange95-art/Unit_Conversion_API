@@ -10,13 +10,15 @@ namespace Unit_Conversion_API.Controllers
     public class ConversionController : ControllerBase
     {
         private readonly IConversionService _conversionService;
+        private readonly Unit_Conversion_API.Services.Implementation.FormulaCategoryRegistry _formulaRegistry;
 
-        public ConversionController(IConversionService conversionService)
+        public ConversionController(IConversionService conversionService, Unit_Conversion_API.Services.Implementation.FormulaCategoryRegistry formulaRegistry)
         {
             _conversionService = conversionService;
+            _formulaRegistry = formulaRegistry;
         }
 
-
+            
         [HttpPost("/api/Convert")]
         public IActionResult Convert(
      [FromBody] ConversionRequestDto request)
@@ -41,13 +43,9 @@ namespace Unit_Conversion_API.Controllers
                 return BadRequest("Invalid formula.");
             }
 
-            var repo = HttpContext.RequestServices.GetService(typeof(Repositories.Interfaces.IUnitRepository)) as Repositories.Interfaces.IUnitRepository;
-            if (repo == null)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Repository not available.");
-            }
-
-            var added = repo.AddFormula(formula);
+            // Ensure category is marked as formula-based
+            _formulaRegistry.AddFormulaCategory(formula.Category);
+            var added = _formulaRegistry.AddFormula(formula);
             if (!added)
             {
                 return Conflict("Formula already exists.");

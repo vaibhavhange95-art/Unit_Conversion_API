@@ -8,9 +8,7 @@ namespace Unit_Conversion_API.Repositories.Interfaces
         IEnumerable<string> GetUnitCategories();
 
         IEnumerable<string> SearchCategories(string searchText);
-        // New API to manage formulas
-        bool TryGetFormula(string category, string fromUnit, string toUnit, out Models.ConversionFormula? formula);
-        bool AddFormula(Models.ConversionFormula formula);
+        // Note: Formula management has been moved to FormulaCategoryRegistry
         bool UpdateUnitBaseFactor(
     string category,
     string unitName,
