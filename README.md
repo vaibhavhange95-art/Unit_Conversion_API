@@ -204,10 +204,10 @@ Prerequisites
 Install:
 
 Visual Studio 2022/2026
-.NET 8 SDK
+.NET 10 SDK
 Steps
 1. Clone Repository
-git clone <repository-url>
+git clone https://github.com/vaibhavhange95-art/Unit_Conversion_API/tree/Unit_Conversion_API
 2. Open Solution
 
 Open:
