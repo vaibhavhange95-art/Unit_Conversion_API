@@ -22,6 +22,11 @@ namespace Unit_Conversion_API.Services.Implementation
             _formulaCategories["PH"] = true;
             _formulaCategories["Decibel"] = true;
             _formulaCategories["SoundPressure"] = true;
+            _formulaCategories["ElectricalGain"] = true;
+            _formulaCategories["SignalStrength"] = true;
+            _formulaCategories["EarthquakeMagnitude"] = true;
+            _formulaCategories["FuelEconomy"] = true;
+            _formulaCategories["Radioactivity"] = true;
 
             // If a unit repository is available, map any repository categories that look like
             // the known formula categories into the registry so lookups using repository category
@@ -57,6 +62,31 @@ namespace Unit_Conversion_API.Services.Implementation
                         {
                             _formulaCategories[key] = true;
                             CopyFormulasToCategory("SoundPressure", key);
+                        }
+                        else if (lower.Contains("elect") || lower.Contains("gain"))
+                        {
+                            _formulaCategories[key] = true;
+                            CopyFormulasToCategory("ElectricalGain", key);
+                        }
+                        else if (lower.Contains("signal") || lower.Contains("rssi") || lower.Contains("dbm"))
+                        {
+                            _formulaCategories[key] = true;
+                            CopyFormulasToCategory("SignalStrength", key);
+                        }
+                        else if (lower.Contains("earth") || lower.Contains("quake") || lower.Contains("magnitude"))
+                        {
+                            _formulaCategories[key] = true;
+                            CopyFormulasToCategory("EarthquakeMagnitude", key);
+                        }
+                        else if (lower.Contains("fuel") || lower.Contains("economy") || lower.Contains("mpg"))
+                        {
+                            _formulaCategories[key] = true;
+                            CopyFormulasToCategory("FuelEconomy", key);
+                        }
+                        else if (lower.Contains("radio") || lower.Contains("becquerel") || lower.Contains("curie"))
+                        {
+                            _formulaCategories[key] = true;
+                            CopyFormulasToCategory("Radioactivity", key);
                         }
                     }
                 }
@@ -95,6 +125,34 @@ namespace Unit_Conversion_API.Services.Implementation
             AddFormula(new ConversionFormula { Category = "SoundPressure", FromUnit = "Pascal", ToUnit = "Decibel", Formula = "20 * log10(x / 0.00002)" });
             // dB SPL -> Pascal: 10^(dB/20) * p0
             AddFormula(new ConversionFormula { Category = "SoundPressure", FromUnit = "Decibel", ToUnit = "Pascal", Formula = "10^(x/20) * 0.00002" });
+
+            // Electrical gain examples
+            // Voltage gain (ratio) -> dB: 20 * log10(Vout/Vin)
+            AddFormula(new ConversionFormula { Category = "ElectricalGain", FromUnit = "VoltageRatio", ToUnit = "Decibel", Formula = "20 * log10(x)" });
+            AddFormula(new ConversionFormula { Category = "ElectricalGain", FromUnit = "Decibel", ToUnit = "VoltageRatio", Formula = "10^(x/20)" });
+
+            // Signal strength examples (RSSI / dBm conversions relative to mW)
+            // mW -> dBm: 10 * log10(P [mW])
+            AddFormula(new ConversionFormula { Category = "SignalStrength", FromUnit = "MilliWatt", ToUnit = "dBm", Formula = "10 * log10(x)" });
+            // dBm -> mW: 10^(dBm/10)
+            AddFormula(new ConversionFormula { Category = "SignalStrength", FromUnit = "dBm", ToUnit = "MilliWatt", Formula = "10^(x/10)" });
+
+            // Earthquake magnitude mapping (approx): Richter magnitude relates to log10 of energy — examples
+            // Relative energy ratio -> Richter (approx): 1.5 * log10(EnergyRatio)
+            AddFormula(new ConversionFormula { Category = "EarthquakeMagnitude", FromUnit = "EnergyRatio", ToUnit = "Richter", Formula = "1.5 * log10(x)" });
+            // Richter -> Energy ratio: 10^(Magnitude / 1.5)
+            AddFormula(new ConversionFormula { Category = "EarthquakeMagnitude", FromUnit = "Richter", ToUnit = "EnergyRatio", Formula = "10^(x / 1.5)" });
+
+            // Fuel economy examples
+            // L/100km -> mpg (US) conversion: mpg = 235.214583 / (L/100km)
+            AddFormula(new ConversionFormula { Category = "FuelEconomy", FromUnit = "LPer100km", ToUnit = "MPG_US", Formula = "235.214583 / x" });
+            // mpg -> L/100km
+            AddFormula(new ConversionFormula { Category = "FuelEconomy", FromUnit = "MPG_US", ToUnit = "LPer100km", Formula = "235.214583 / x" });
+
+            // Radioactivity examples
+            // Becquerel -> Curie: 1 Ci = 3.7e10 Bq
+            AddFormula(new ConversionFormula { Category = "Radioactivity", FromUnit = "Becquerel", ToUnit = "Curie", Formula = "x / 3.7e10" });
+            AddFormula(new ConversionFormula { Category = "Radioactivity", FromUnit = "Curie", ToUnit = "Becquerel", Formula = "x * 3.7e10" });
         }
 
         private string BuildKey(string category, string from, string to)
