@@ -13,9 +13,7 @@
 
   <ItemGroup>
     <Folder Include="Exception\" />
-    <Folder Include="Constant\" />
     <Folder Include="Controllers\" />
-    <Folder Include="Service\Interfaces\" />
   </ItemGroup>
 
 </Project>
