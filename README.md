@@ -9,19 +9,22 @@ The API currently supports:
 - Length
 - Weight / Mass
 - Temperature
-- Time (Dynamic Category)
+- Volume (Dynamic Category)
 
 The application is designed using a layered architecture and stores all unit definitions in memory. New categories and units can be added dynamically at runtime without changing the application code or using a database.
-The **Unit_Conversion_API** provides REST endpoints for converting units, searching available units, Adding categories, and updating conversion factors.
+The **Unit_Conversion_API** provides REST endpoints for converting units, searching available units, Adding categories and units, adding required formulas and updating conversion factors.
 
 ---
 
 # Features
 
 - Convert values between supported units
+- Search available units and categories
 - Dynamic in-memory unit repository
 - Add new conversion categories
+- Define and manage conversion formulas
 - Add new units to existing or new categories
+- Update conversion factors dynamically via REST APIs
 - Global exception handling
 - Swagger/OpenAPI support
 - Repository Pattern
@@ -244,11 +247,11 @@ The `POST /api/AddUnit` endpoint is designed to add **one unit at a time**. ```
 - ✅ Accepts a single unit per request.
 - ✅ Creates the category automatically if it does not exist.
 - ✅ Prevents duplicate unit names within the same category.
-- ❌ Does not currently support adding multiple units in a single request.
+- ✅ Does support adding multiple units in a single request.
 
 ### Future Enhancement
 
-A bulk insert endpoint (`POST /api/AddUnits`) is planned to support adding multiple units in a single request.
+A bulk insert endpoint (`POST /api/AddUnits`) to adding multiple units in a single request.
 
 **Example Request**
 
@@ -276,9 +279,7 @@ A bulk insert endpoint (`POST /api/AddUnits`) is planned to support adding multi
   }
 ]
 ```
-
-This enhancement will improve performance by allowing multiple units to be added in a single API call while keeping the existing `POST /api/AddUnit` endpoint available for single-unit operations.
-
+ 
 If the unit already exists:
 
 ```json
